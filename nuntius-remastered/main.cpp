@@ -140,6 +140,7 @@ int main(int, char**)
         ImGui_ImplDX11_NewFrame();
         ImGui_ImplWin32_NewFrame();
         ImGui::NewFrame();
+
         // ---------------------------------------------------
         ImGui::SetNextWindowSize(ImVec2(800, 500));
         ImGui::SetNextWindowPos(ImVec2(100, 100));
@@ -171,6 +172,7 @@ int main(int, char**)
         ImGui::ColorEdit4("Color Picker", (float*)&custom_color); // Edit 4 floats representing a color
 
         ImGui::End();
+
         // ---------------------------------------------------
         // Rendering
         ImGui::Render();
