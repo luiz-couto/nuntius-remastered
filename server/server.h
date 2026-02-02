@@ -9,6 +9,7 @@
 #include <format>
 #include <map>
 #include "message.h"
+#include "exceptions.h"
 
 struct Message {
     std::string msg;
@@ -68,23 +69,10 @@ public:
                 continue;
             }
 
-            try {
-                std::string clientUsername = receiveClientMessage(clientSocket);
-                addNewClient(clientUsername, clientAddress, clientSocket);
-            } catch(std::string err) {
-                std::print("{}\n", err);
-                continue;
-            }
+            // Handle client in a separate thread
+            std::thread clientThread([this, &clientSocket]() { this->handleClient(clientSocket); });
+            clientThread.detach();
         }
-    }
-
-    std::string receiveClientMessage(SOCKET &clientSocket) {
-        char buffer[1024] = { 0 };
-        int bytesReceived = recv(clientSocket, buffer, sizeof(buffer) - 1, 0);
-        
-        buffer[bytesReceived] = '\0';
-        std::string message(buffer);
-        return message;
     }
 
     bool isUsernameInUse(std::string username) {
@@ -96,13 +84,26 @@ public:
         while(true) {
             try {
                 Header header;
-                readMessageHeader(socket, header);
+                try {
+                    readMessageHeader(socket, header);
+                } catch (const ConnectionClosedException &err) {
+                    std::print("Connection closed by the client, killing thread...\n");
+                    return;
+                } catch (const MessageReceiveException &err) {
+                    std::print("Message receive error, killing thread...\n");
+                    return;
+                }
 
                 switch(header.type) {
                     case CONNECT: {
                         ConnectMessagePayload payload;
-                        readConnectMessage(socket, header, payload);
-
+                        try {
+                            readConnectMessage(socket, header, payload);
+                        } catch (std::runtime_error err) {
+                            std::print("Failed to connect with client, closing socket connection...");
+                            this->disconnectClient(socket);
+                            return;
+                        }
                         std::print("Received connection request with username: {}", payload.username);
                     }
                     default: {
@@ -130,10 +131,10 @@ public:
         std::print("Accepted connection from {}:{}\n", clientIP, ntohs(clientAddress.sin_port));
 
         clients[username] = &clientSocket;
+    }
 
-        // Handle client in a separate thread
-        std::thread clientThread([this, &clientSocket]() { this->handleClient(clientSocket); });
-        clientThread.detach();
+    void disconnectClient(SOCKET &socket) {
+        closesocket(socket);
     }
 
 };

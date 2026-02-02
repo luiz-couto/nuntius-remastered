@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 #include <stdexcept>
+#include "exceptions.h"
 
 struct Header {
     uint32_t type;
@@ -42,9 +43,14 @@ void receiveAll(SOCKET &socket, void* buffer, size_t expectedLength) {
 
     while (received < expectedLength) {
         int pkgSize = recv(socket, bufferPointer + received, expectedLength - received, 0);
-        if (pkgSize <= 0) {
-            throw std::runtime_error("Unable to receive message");
+
+        if (pkgSize == 0) {
+            throw ConnectionClosedException();
         }
+        if (pkgSize < 0) {
+            throw MessageReceiveException();
+        }
+
         received += pkgSize;
     }
 }

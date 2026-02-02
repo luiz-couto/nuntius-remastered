@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="exceptions.h" />
     <ClInclude Include="message.h" />
     <ClInclude Include="server.h" />
   </ItemGroup>

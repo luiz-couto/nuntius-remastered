@@ -6,7 +6,7 @@
 // - Documentation        https://dearimgui.com/docs (same as your local docs/ folder).
 // - Introduction, links and more at the top of imgui.cpp
 
-#include "server.h"
+#include "client.h"
 
 #include "imgui.h"
 #include "imgui_impl_win32.h"
@@ -33,7 +33,8 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 int main(int, char**)
 {   
 
-    Server *server = new Server();
+    Client *client = new Client();
+    client->init();
 
     // Make process DPI aware and obtain main monitor scale
     ImGui_ImplWin32_EnableDpiAwareness();
@@ -158,6 +159,7 @@ int main(int, char**)
         
         ImGui::SameLine();
         if (ImGui::Button("Click!")) {
+            client->connectToServer(buff);
             show_text_name = !show_text_name;
         }
 
