@@ -60,7 +60,7 @@ public:
         }
 
         std::print("Server is listen on port {}...\n", port);
-        std::thread serverThread(serverMainThread);
+        std::thread serverThread([this]() { this->serverMainThread(); });
         serverThread.detach();
     }
 
@@ -139,7 +139,7 @@ public:
         clients[username] = &clientSocket;
 
         // Handle client in a separate thread
-        std::thread clientThread(handleClient, clientSocket);
+        std::thread clientThread([this, &clientSocket]() { this->handleClient(clientSocket); });
         clientThread.detach();
     }
 
