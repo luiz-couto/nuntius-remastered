@@ -67,11 +67,12 @@ void readString(char*& bufferPointer, std::string &value, uint32_t lenght) {
 }
 
 void sendConnectMessage(SOCKET &socket, ConnectMessagePayload &payload) {
-    uint32_t payloadLength = payload.username.size();
-    if (payloadLength == 0) {
+    uint32_t usernameLength = payload.username.size();
+    if (usernameLength == 0) {
         throw "username field is required";
     }
 
+    uint32_t payloadLength = sizeof(uint32_t) + usernameLength;
     Header header = { CONNECT, payloadLength };
 
     std::vector<char> buffer(sizeof(Header) + payloadLength);
@@ -80,7 +81,7 @@ void sendConnectMessage(SOCKET &socket, ConnectMessagePayload &payload) {
     writeu32(bufferPointer, header.type);
     writeu32(bufferPointer, header.length);
 
-    writeu32(bufferPointer, payload.username.size());
+    writeu32(bufferPointer, usernameLength);
     writeString(bufferPointer, payload.username);
 
     send(socket, buffer.data(), static_cast<int>(buffer.size()), 0);

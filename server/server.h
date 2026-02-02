@@ -132,7 +132,7 @@ public:
         }
 
         clients[username] = &clientSocket;
-        std::print("Client {} added!\n", username);
+        std::print("client {} added!\n", username);
     }
 
     void removeClient(std::string username, SOCKET &socket) {
@@ -141,6 +141,7 @@ public:
         auto it = clients.find(username);
         if (it != clients.end()) {
             clients.erase(it);
+            std::print("client {} removed\n", username);
         }
     }
 
