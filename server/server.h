@@ -69,6 +69,10 @@ public:
                 continue;
             }
 
+            char clientIP[INET_ADDRSTRLEN];
+            inet_ntop(AF_INET, &clientAddress.sin_addr, clientIP, INET_ADDRSTRLEN);
+            std::print("Accepted socket connection from {}:{}\n", clientIP, ntohs(clientAddress.sin_port));
+
             // Handle client in a separate thread
             std::thread clientThread([this, &clientSocket]() { this->handleClient(clientSocket); });
             clientThread.detach();
@@ -81,17 +85,16 @@ public:
     }
 
     void handleClient(SOCKET &socket) {
+        std::string username = "";
         while(true) {
             try {
                 Header header;
                 try {
                     readMessageHeader(socket, header);
                 } catch (const ConnectionClosedException &err) {
-                    std::print("Connection closed by the client, killing thread...\n");
-                    return;
+                    throw FatalClientException("Connection closed by the client, killing thread...\n");
                 } catch (const MessageReceiveException &err) {
-                    std::print("Message receive error, killing thread...\n");
-                    return;
+                    throw FatalClientException("Message receive error, killing thread...\n");
                 }
 
                 switch(header.type) {
@@ -100,25 +103,27 @@ public:
                         try {
                             readConnectMessage(socket, header, payload);
                         } catch (std::runtime_error err) {
-                            std::print("Failed to connect with client, closing socket connection...");
-                            this->disconnectClient(socket);
-                            return;
+                            throw FatalClientException("Failed to connect with client, closing socket connection...");
                         }
-                        std::print("Received connection request with username: {}", payload.username);
+                        std::print("Received connection request with username: {}\n", payload.username);
+                        this->addNewClient(payload.username, socket);
+                        username = payload.username;
+                        break;
                     }
                     default: {
                         continue;
                     }
                 }
 
-            } catch (std::runtime_error err) {
-                std::print("error while reading message: {}", err.what());
-                continue;
+            } catch (const FatalClientException &err) {
+                std::print("fatal client exception: {}\n", err.what());
+                this->removeClient(username, socket);
+                return;
             }
         }
     }
 
-    void addNewClient(std::string username, sockaddr_in &clientAddress, SOCKET &clientSocket) {
+    void addNewClient(std::string username, SOCKET &clientSocket) {
         if (isUsernameInUse(username)) {
             std::string errMessage = "Username already in use!";
             //MessageBoxA(NULL, errMessage.c_str(), "Client Creation Error", MB_OK | MB_ICONERROR);
@@ -126,11 +131,17 @@ public:
             throw errMessage;
         }
 
-        char clientIP[INET_ADDRSTRLEN];
-        inet_ntop(AF_INET, &clientAddress.sin_addr, clientIP, INET_ADDRSTRLEN);
-        std::print("Accepted connection from {}:{}\n", clientIP, ntohs(clientAddress.sin_port));
-
         clients[username] = &clientSocket;
+        std::print("Client {} added!\n", username);
+    }
+
+    void removeClient(std::string username, SOCKET &socket) {
+        this->disconnectClient(socket);
+
+        auto it = clients.find(username);
+        if (it != clients.end()) {
+            clients.erase(it);
+        }
     }
 
     void disconnectClient(SOCKET &socket) {

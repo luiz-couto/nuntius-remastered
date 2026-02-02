@@ -13,3 +13,9 @@ public:
     MessageReceiveException() : std::runtime_error("Unable to receive message") {}
     explicit MessageReceiveException(const std::string& msg) : std::runtime_error(msg) {}
 };
+
+class FatalClientException : public std::runtime_error {
+public:
+    FatalClientException() : std::runtime_error("Fatal client error") {}
+    explicit FatalClientException(const std::string& msg) : std::runtime_error(msg) {}
+};

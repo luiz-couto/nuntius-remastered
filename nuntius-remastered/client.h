@@ -48,9 +48,9 @@ public:
             throw std::runtime_error(errMessage);
         }
 
-        // ConnectMessagePayload payload = { username };
-        // sendConnectMessage(clientSocket, payload);
-        // std::print("Connected to the server ;)\n");
+        ConnectMessagePayload payload = { username };
+        sendConnectMessage(clientSocket, payload);
+        std::print("Connected to the server ;)\n");
 
         // while(true) {
 
