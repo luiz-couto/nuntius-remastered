@@ -14,6 +14,7 @@ struct Header {
 
 enum MessageType {
     CONNECT,
+    CONNECT_ACK,
     GROUP_MESSAGE,
     PRIVATE_MESSAGE
 };
@@ -83,6 +84,19 @@ void sendConnectMessage(SOCKET &socket, ConnectMessagePayload &payload) {
 
     writeu32(bufferPointer, usernameLength);
     writeString(bufferPointer, payload.username);
+
+    send(socket, buffer.data(), static_cast<int>(buffer.size()), 0);
+}
+
+void sendConnectACKMessage(SOCKET &socket) {
+    uint32_t payloadLength = 0;
+    Header header = { CONNECT_ACK, payloadLength };
+
+    std::vector<char> buffer(sizeof(Header) + payloadLength);
+    char* bufferPointer = buffer.data();
+
+    writeu32(bufferPointer, header.type);
+    writeu32(bufferPointer, header.length);
 
     send(socket, buffer.data(), static_cast<int>(buffer.size()), 0);
 }

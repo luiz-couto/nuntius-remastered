@@ -108,6 +108,7 @@ public:
                         std::print("Received connection request with username: {}\n", payload.username);
                         this->addNewClient(payload.username, socket);
                         username = payload.username;
+                        sendConnectACKMessage(socket);
                         break;
                     }
                     default: {

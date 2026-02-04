@@ -19,3 +19,9 @@ public:
     FatalClientException() : std::runtime_error("Fatal client error") {}
     explicit FatalClientException(const std::string& msg) : std::runtime_error(msg) {}
 };
+
+class FatalServerException : public std::runtime_error {
+public:
+    FatalServerException() : std::runtime_error("Fatal server error") {}
+    explicit FatalServerException(const std::string& msg) : std::runtime_error(msg) {}
+};

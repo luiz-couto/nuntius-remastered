@@ -6,8 +6,12 @@
 #include <thread>
 #include <print>
 #include <format>
+#include <map>
+#include <functional>
 
 #include "message.h"
+
+using ActionMapT = std::map<MessageType, std::function<void()>>;
 
 class Client {
 private:
@@ -15,9 +19,10 @@ private:
     int port;
     SOCKET clientSocket;
     sockaddr_in serverAddress = {};
+    ActionMapT actionMap;
 
 public:
-    Client(std::string _host = "127.0.0.1", int _port = 8000): host(_host), port(_port) {}
+    Client(ActionMapT _actionMap = {}, std::string _host = "127.0.0.1", int _port = 8000): host(_host), port(_port), actionMap(_actionMap) {}
 
     void init() {
         WSADATA wsaData;
@@ -41,6 +46,44 @@ public:
         }
     }
 
+    void runFromMap(MessageType kind) {
+        auto it = actionMap.find(kind);
+        if (it != actionMap.end()) {
+            it->second();
+        }
+        return;
+    }
+
+    void listenForServerMessages() {
+        while(true) {
+            try {
+                Header header;
+                try {
+                    readMessageHeader(clientSocket, header);
+                } catch (const ConnectionClosedException &err) {
+                    throw FatalClientException("Connection closed by the server, killing thread...\n");
+                } catch (const MessageReceiveException &err) {
+                    throw FatalClientException("Message receive error, killing thread...\n");
+                }
+
+                switch(header.type) {
+                    case CONNECT_ACK: {
+                        std::print("Connected to the server ;)\n");
+                        runFromMap(CONNECT_ACK);
+                        break;
+                    }
+                    default: {
+                        continue;
+                    }
+                }
+
+            } catch (const FatalServerException &err) {
+                std::print("fatal server exception: {}\n", err.what());
+                return;
+            }
+        }
+    }
+
     void connectToServer(std::string username) {
         if (connect(clientSocket, reinterpret_cast<sockaddr*>(&serverAddress), sizeof(serverAddress)) == SOCKET_ERROR) {
             std::string errMessage = "Connection failed with error: " + WSAGetLastError();
@@ -50,10 +93,8 @@ public:
 
         ConnectMessagePayload payload = { username };
         sendConnectMessage(clientSocket, payload);
-        std::print("Connected to the server ;)\n");
 
-        // while(true) {
-
-        // }
+        std::thread listenToServer([this]() { this->listenForServerMessages(); });
+        listenToServer.detach();
     }
 };

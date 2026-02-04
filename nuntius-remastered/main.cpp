@@ -33,9 +33,6 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 int main(int, char**)
 {   
 
-    Client *client = new Client();
-    client->init();
-
     // Make process DPI aware and obtain main monitor scale
     ImGui_ImplWin32_EnableDpiAwareness();
     float main_scale = ImGui_ImplWin32_GetDpiScaleForMonitor(::MonitorFromPoint(POINT{ 0, 0 }, MONITOR_DEFAULTTOPRIMARY));
@@ -110,6 +107,17 @@ int main(int, char**)
 
     // Main loop
     bool done = false;
+
+    ActionMapT actionMap = {
+        {MessageType::CONNECT_ACK, [&buff]() { 
+            std::string msg = "Connected!";
+            strcpy_s(buff, sizeof(buff), msg.c_str());
+        }}
+    };
+    
+    Client *client = new Client(actionMap);
+    client->init();
+
     while (!done)
     {
         // Poll and handle messages (inputs, window resize, etc.)
