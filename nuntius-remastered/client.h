@@ -10,6 +10,7 @@
 #include <functional>
 
 #include "message.h"
+#include "exceptions.h"
 
 using ActionMapT = std::map<MessageType, std::function<void()>>;
 
@@ -88,7 +89,7 @@ public:
         if (connect(clientSocket, reinterpret_cast<sockaddr*>(&serverAddress), sizeof(serverAddress)) == SOCKET_ERROR) {
             std::string errMessage = "Connection failed with error: " + WSAGetLastError();
             closesocket(clientSocket);
-            throw std::runtime_error(errMessage);
+            throw FatalServerException(errMessage);
         }
 
         ConnectMessagePayload payload = { username };
