@@ -67,16 +67,7 @@ public:
                     throw FatalClientException("Message receive error, killing thread...\n");
                 }
 
-                switch(header.type) {
-                    case CONNECT_ACK: {
-                        std::print("Connected to the server ;)\n");
-                        runFromMap(CONNECT_ACK);
-                        break;
-                    }
-                    default: {
-                        continue;
-                    }
-                }
+                runFromMap(header.type);
 
             } catch (const FatalServerException &err) {
                 std::print("fatal server exception: {}\n", err.what());

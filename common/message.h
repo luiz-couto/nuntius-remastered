@@ -7,17 +7,18 @@
 #include <stdexcept>
 #include "exceptions.h"
 
-struct Header {
-    uint32_t type;
-    uint32_t length;
-};
-
 enum MessageType {
     CONNECT,
     CONNECT_ACK,
     GROUP_MESSAGE,
     PRIVATE_MESSAGE
 };
+
+struct Header {
+    MessageType type;
+    uint32_t length;
+};
+
 
 struct ConnectMessagePayload {
     std::string username;
@@ -106,7 +107,7 @@ void readMessageHeader(SOCKET &socket, Header &header) {
     receiveAll(socket, buffer.data(), buffer.size());
     
     char* bufferPointer = buffer.data();
-    readu32(bufferPointer, header.type);
+    readu32(bufferPointer, reinterpret_cast<uint32_t&>(header.type));
     readu32(bufferPointer, header.length);
 }
 

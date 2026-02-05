@@ -25,6 +25,7 @@ int main() {
     ActionMapT actionMap = {
         {MessageType::CONNECT_ACK, [&showLoginWindow]() { 
             showLoginWindow = false;
+            std::println("connected to the server!");
         }}
     };
 
@@ -46,6 +47,7 @@ int main() {
 
     // string[] mainConversation
     // map<string: username, string[]> privateConversations
+    // string[] usersArray
 
     // username
     // messageInput
