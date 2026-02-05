@@ -57,7 +57,7 @@ int main() {
         if (state == uiHelper::STATE::CONTINUE) continue;
 
         // ---------------------------------------------------
-        login->render();
+        if (showLoginWindow) login->render();
 
 
         // ---------------------------------------------------

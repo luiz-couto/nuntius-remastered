@@ -28,7 +28,7 @@ public:
         // Setup
         ImGui::SetNextWindowSize(ImVec2(LOGIN_WINDOW_WIDTH, LOGIN_WINDOW_HEIGHT));
         ImGui::SetNextWindowPos(ImVec2(LOGIN_WINDOW_POS_X, LOGIN_WINDOW_POS_Y));
-        ImGui::Begin(LOGIN_WINDOW_NAME, &showLoginWindow, ImGuiWindowFlags_NoCollapse);
+        ImGui::Begin(LOGIN_WINDOW_NAME, nullptr, ImGuiWindowFlags_NoCollapse);
 
         // Text
         ImGui::SetCursorPosX(LOGIN_WINDOW_WIDTH * 0.5f - ImGui::CalcTextSize(LOGIN_MESSAGE).x * 0.5f);
