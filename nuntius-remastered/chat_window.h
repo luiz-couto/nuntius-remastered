@@ -56,22 +56,33 @@ public:
 
         // Messages Right Panel
         ImGui::SameLine();
+        ImGui::BeginChild("RightPanel", ImVec2(0, 0), false); // fixed width, full height - border true
+        
         ImGui::BeginChild("MessagesPanel", ImVec2(0, 400), true); // fixed width, full height - border true
         ImGui::TextDisabled("MESSAGES");
         ImGui::Separator();
 
         for (int i=0; i<messages.size(); i++) {
-            ImGui::Text(messages[i].c_str());
+            ImGui::TextWrapped(messages[i].c_str());
         }
 
         ImGui::EndChild();
 
-        // Message Input
+        ImGui::Spacing();
+
+        // Input and Send Button
+        float sendButtonWidth = ImGui::CalcTextSize("SEND").x + ImGui::GetStyle().FramePadding.x * 2;
+        float inputWidth = ImGui::GetContentRegionAvail().x - sendButtonWidth - ImGui::GetStyle().ItemSpacing.x;
+
+        ImGui::SetNextItemWidth(inputWidth);
+
         ImGui::InputText("##inputMessage", &inputMessage);
         ImGui::SameLine();
-        if (ImGui::Button("Send")) { 
+        if (ImGui::Button("SEND")) { 
             
         }
+
+        ImGui::EndChild();
     
         ImGui::End();
     }
