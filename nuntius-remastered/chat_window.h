@@ -76,7 +76,12 @@ public:
 
         ImGui::SetNextItemWidth(inputWidth);
 
-        ImGui::InputText("##inputMessage", &inputMessage);
+        if (ImGui::InputText("##inputMessage", &inputMessage, ImGuiInputTextFlags_EnterReturnsTrue)) {
+            if (!inputMessage.empty()) {
+                onClickSendButton(inputMessage);
+                inputMessage = "";
+            }
+        }
         ImGui::SameLine();
         if (ImGui::Button("SEND")) { 
             onClickSendButton(inputMessage);
