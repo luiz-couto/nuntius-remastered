@@ -45,7 +45,8 @@ int main() {
     LoginWindow *login = new LoginWindow(showLoginWindow, username, onClickLogin);
     
     std::vector<std::string> usernames = {"cat", "dog"};
-    ChatWindow *chat = new ChatWindow(showChatWindow, usernames, []() {});
+    std::vector<std::string> messages = {"luiz: hello!", "ana: heeeey!"};
+    ChatWindow *chat = new ChatWindow(showChatWindow, usernames, messages, []() {});
 
     // showMainWindow
     // showAlertWindow

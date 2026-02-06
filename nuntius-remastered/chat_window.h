@@ -19,11 +19,13 @@ class ChatWindow {
 private:
     bool &showChatWindow;
     std::vector<std::string> &usernames;
+    std::vector<std::string> &messages;
     std::function<void()> onClickSendButton;
+    std::string inputMessage;
 
 public:
-    ChatWindow(bool &_showChatWindow,std::vector<std::string> &_usernames, std::function<void()> _onClickSendButton):
-        showChatWindow(_showChatWindow), usernames(_usernames), onClickSendButton(_onClickSendButton) {}
+    ChatWindow(bool &_showChatWindow, std::vector<std::string> &_usernames, std::vector<std::string> &_messages, std::function<void()> _onClickSendButton):
+        showChatWindow(_showChatWindow), usernames(_usernames), messages(_messages), onClickSendButton(_onClickSendButton) {}
 
     void render() {
         // Setup
@@ -41,7 +43,7 @@ public:
 
             if (ImGui::BeginPopupContextItem()) {
                 if (ImGui::MenuItem("Private Message")) {
-                    
+
                 }
                 ImGui::EndPopup();
             }
@@ -51,6 +53,26 @@ public:
         }
 
         ImGui::EndChild();
+
+        // Messages Right Panel
+        ImGui::SameLine();
+        ImGui::BeginChild("MessagesPanel", ImVec2(0, 400), true); // fixed width, full height - border true
+        ImGui::TextDisabled("MESSAGES");
+        ImGui::Separator();
+
+        for (int i=0; i<messages.size(); i++) {
+            ImGui::Text(messages[i].c_str());
+        }
+
+        ImGui::EndChild();
+
+        // Message Input
+        ImGui::InputText("##inputMessage", &inputMessage);
+        ImGui::SameLine();
+        if (ImGui::Button("Send")) { 
+            
+        }
+    
         ImGui::End();
     }
 };
