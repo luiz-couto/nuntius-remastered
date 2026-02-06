@@ -20,8 +20,8 @@ int main() {
     // Main loop
     bool done = false;
 
-    bool showLoginWindow = false;
-    bool showChatWindow = true;
+    bool showLoginWindow = true;
+    bool showChatWindow = false;
     std::string username = "";
 
     ActionMapT actionMap = {
@@ -46,7 +46,9 @@ int main() {
     
     std::vector<std::string> usernames = {"cat", "dog"};
     std::vector<std::string> messages = {"luiz: hello!", "ana: heeeey!"};
-    ChatWindow *chat = new ChatWindow(showChatWindow, usernames, messages, []() {});
+    ChatWindow *chat = new ChatWindow(showChatWindow, usernames, messages, [&client](std::string msg) {
+        client->sendMessage(msg);
+    });
 
     // showMainWindow
     // showAlertWindow

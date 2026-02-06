@@ -24,6 +24,10 @@ struct ConnectMessagePayload {
     std::string username;
 };
 
+struct GroupMessagePayload {
+    std::string message;
+};
+
 void writeu32(char* &bufferPointer, uint32_t value) {
     uint32_t outVal = htonl(value);
     memcpy(bufferPointer, &outVal, sizeof(outVal));
@@ -102,6 +106,27 @@ void sendConnectACKMessage(SOCKET &socket) {
     send(socket, buffer.data(), static_cast<int>(buffer.size()), 0);
 }
 
+void sendGroupMessage(SOCKET &socket, GroupMessagePayload &payload) {
+    uint32_t messageLength = payload.message.size();
+    if (messageLength == 0) {
+        throw "message field is required";
+    }
+
+    uint32_t payloadLength = sizeof(uint32_t) + messageLength;
+    Header header = { GROUP_MESSAGE, payloadLength };
+
+    std::vector<char> buffer(sizeof(Header) + payloadLength);
+    char* bufferPointer = buffer.data();
+
+    writeu32(bufferPointer, header.type);
+    writeu32(bufferPointer, header.length);
+
+    writeu32(bufferPointer, messageLength);
+    writeString(bufferPointer, payload.message);
+
+    send(socket, buffer.data(), static_cast<int>(buffer.size()), 0);
+}
+
 void readMessageHeader(SOCKET &socket, Header &header) {
     std::vector<char> buffer(sizeof(Header));
     receiveAll(socket, buffer.data(), buffer.size());
@@ -121,4 +146,16 @@ void readConnectMessage(SOCKET &socket, Header &header, ConnectMessagePayload &p
     readu32(bufferPointer, usernameLenght);
 
     readString(bufferPointer, payload.username, usernameLenght);
+}
+
+void readGroupMessage(SOCKET &socket, Header &header, GroupMessagePayload &payload) {
+    std::vector<char> payloadBuffer(header.length);
+    receiveAll(socket, payloadBuffer.data(), payloadBuffer.size());
+
+    char* bufferPointer = payloadBuffer.data();
+
+    uint32_t messageLenght;
+    readu32(bufferPointer, messageLenght);
+
+    readString(bufferPointer, payload.message, messageLenght);
 }

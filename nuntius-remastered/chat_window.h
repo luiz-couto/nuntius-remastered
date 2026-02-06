@@ -20,11 +20,11 @@ private:
     bool &showChatWindow;
     std::vector<std::string> &usernames;
     std::vector<std::string> &messages;
-    std::function<void()> onClickSendButton;
+    std::function<void(std::string message)> onClickSendButton;
     std::string inputMessage;
 
 public:
-    ChatWindow(bool &_showChatWindow, std::vector<std::string> &_usernames, std::vector<std::string> &_messages, std::function<void()> _onClickSendButton):
+    ChatWindow(bool &_showChatWindow, std::vector<std::string> &_usernames, std::vector<std::string> &_messages, std::function<void(std::string message)> _onClickSendButton):
         showChatWindow(_showChatWindow), usernames(_usernames), messages(_messages), onClickSendButton(_onClickSendButton) {}
 
     void render() {
@@ -79,7 +79,8 @@ public:
         ImGui::InputText("##inputMessage", &inputMessage);
         ImGui::SameLine();
         if (ImGui::Button("SEND")) { 
-            
+            onClickSendButton(inputMessage);
+            inputMessage = "";
         }
 
         ImGui::EndChild();

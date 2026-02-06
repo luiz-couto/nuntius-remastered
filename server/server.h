@@ -111,6 +111,15 @@ public:
                         sendConnectACKMessage(socket);
                         break;
                     }
+                    case GROUP_MESSAGE: {
+                        GroupMessagePayload payload;
+                        try {
+                            readGroupMessage(socket, header, payload);
+                        } catch (std::runtime_error err) {
+                            throw FatalClientException("Failed to receive message, closing socket connection...");
+                        }
+                        std::print("Received message from {}: {}\n", username, payload.message);
+                    }
                     default: {
                         continue;
                     }

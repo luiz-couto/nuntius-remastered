@@ -89,4 +89,9 @@ public:
         std::thread listenToServer([this]() { this->listenForServerMessages(); });
         listenToServer.detach();
     }
+
+    void sendMessage(std::string message) {
+        GroupMessagePayload payload = { message };
+        sendGroupMessage(clientSocket, payload);
+    }
 };
