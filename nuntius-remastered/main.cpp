@@ -1,6 +1,7 @@
 #include "client.h"
 #include "imgui_helper.h"
 #include "login_window.h"
+#include "chat_window.h"
 #include <print>
 #include <format>
 
@@ -19,13 +20,15 @@ int main() {
     // Main loop
     bool done = false;
 
-    bool showLoginWindow = true;
+    bool showLoginWindow = false;
+    bool showChatWindow = true;
     std::string username = "";
 
     ActionMapT actionMap = {
-        {MessageType::CONNECT_ACK, [&showLoginWindow]() { 
+        {MessageType::CONNECT_ACK, [&showLoginWindow, &showChatWindow]() { 
             showLoginWindow = false;
             std::println("connected to the server!");
+            showChatWindow = true;
         }}
     };
 
@@ -40,6 +43,9 @@ int main() {
         }
     };
     LoginWindow *login = new LoginWindow(showLoginWindow, username, onClickLogin);
+    
+    std::vector<std::string> usernames = {"cat", "dog"};
+    ChatWindow *chat = new ChatWindow(showChatWindow, usernames, []() {});
 
     // showMainWindow
     // showAlertWindow
@@ -60,7 +66,7 @@ int main() {
 
         // ---------------------------------------------------
         if (showLoginWindow) login->render();
-
+        if (showChatWindow) chat->render();
 
         // ---------------------------------------------------
         uiHelper::render(clear_color);

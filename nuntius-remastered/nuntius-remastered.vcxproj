@@ -126,6 +126,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="chat_window.h" />
     <ClInclude Include="client.h" />
     <ClInclude Include="imconfig.h" />
     <ClInclude Include="imgui.h" />
