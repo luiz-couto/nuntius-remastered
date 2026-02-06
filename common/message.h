@@ -11,6 +11,7 @@ enum MessageType {
     CONNECT,
     CONNECT_ACK,
     GROUP_MESSAGE,
+    SERVER_GROUP_MESSAGE,
     PRIVATE_MESSAGE
 };
 
@@ -25,6 +26,11 @@ struct ConnectMessagePayload {
 };
 
 struct GroupMessagePayload {
+    std::string message;
+};
+
+struct ServerGroupMessagePayload {
+    std::string username;
     std::string message;
 };
 
@@ -127,6 +133,31 @@ void sendGroupMessage(SOCKET &socket, GroupMessagePayload &payload) {
     send(socket, buffer.data(), static_cast<int>(buffer.size()), 0);
 }
 
+void sendServerGroupMessage(SOCKET &socket, ServerGroupMessagePayload &payload) {
+    uint32_t messageLength = payload.message.size();
+    uint32_t usernameLength = payload.username.size();
+    if (messageLength == 0 || usernameLength == 0) {
+        throw "message and username field are required";
+    }
+
+    uint32_t payloadLength = sizeof(uint32_t) + messageLength + sizeof(uint32_t) + usernameLength;
+    Header header = { SERVER_GROUP_MESSAGE, payloadLength };
+
+    std::vector<char> buffer(sizeof(Header) + payloadLength);
+    char* bufferPointer = buffer.data();
+
+    writeu32(bufferPointer, header.type);
+    writeu32(bufferPointer, header.length);
+
+    writeu32(bufferPointer, messageLength);
+    writeString(bufferPointer, payload.message);
+
+    writeu32(bufferPointer, usernameLength);
+    writeString(bufferPointer, payload.username);
+
+    send(socket, buffer.data(), static_cast<int>(buffer.size()), 0);
+}
+
 void readMessageHeader(SOCKET &socket, Header &header) {
     std::vector<char> buffer(sizeof(Header));
     receiveAll(socket, buffer.data(), buffer.size());
@@ -158,4 +189,19 @@ void readGroupMessage(SOCKET &socket, Header &header, GroupMessagePayload &paylo
     readu32(bufferPointer, messageLenght);
 
     readString(bufferPointer, payload.message, messageLenght);
+}
+
+void readServerGroupMessage(SOCKET &socket, Header &header, ServerGroupMessagePayload &payload) {
+    std::vector<char> payloadBuffer(header.length);
+    receiveAll(socket, payloadBuffer.data(), payloadBuffer.size());
+
+    char* bufferPointer = payloadBuffer.data();
+
+    uint32_t messageLenght;
+    readu32(bufferPointer, messageLenght);
+    readString(bufferPointer, payload.message, messageLenght);
+
+    uint32_t usernameLenght;
+    readu32(bufferPointer, usernameLenght);
+    readString(bufferPointer, payload.username, usernameLenght);
 }

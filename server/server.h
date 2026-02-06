@@ -119,6 +119,12 @@ public:
                             throw FatalClientException("Failed to receive message, closing socket connection...");
                         }
                         std::print("Received message from {}: {}\n", username, payload.message);
+                        ServerGroupMessagePayload serverPayload = {username, payload.message};
+                        
+                        for (auto const& [otherUsername, otherSocket] : clients) {
+                            sendServerGroupMessage(*otherSocket, serverPayload);
+                        }
+                        break;
                     }
                     default: {
                         continue;

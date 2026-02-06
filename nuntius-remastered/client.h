@@ -12,7 +12,7 @@
 #include "message.h"
 #include "exceptions.h"
 
-using ActionMapT = std::map<MessageType, std::function<void()>>;
+using ActionMapT = std::map<MessageType, std::function<void(SOCKET &socket, Header &header)>>;
 
 class Client {
 private:
@@ -47,10 +47,10 @@ public:
         }
     }
 
-    void runFromMap(MessageType kind) {
-        auto it = actionMap.find(kind);
+    void runFromMap(Header &header) {
+        auto it = actionMap.find(header.type);
         if (it != actionMap.end()) {
-            it->second();
+            it->second(clientSocket, header);
         }
         return;
     }
@@ -67,7 +67,7 @@ public:
                     throw FatalClientException("Message receive error, killing thread...\n");
                 }
 
-                runFromMap(header.type);
+                runFromMap(header);
 
             } catch (const FatalServerException &err) {
                 std::print("fatal server exception: {}\n", err.what());
