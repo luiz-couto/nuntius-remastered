@@ -76,10 +76,12 @@ public:
 
         ImGui::SetNextItemWidth(inputWidth);
 
+        ImGui::SetKeyboardFocusHere();
         if (ImGui::InputText("##inputMessage", &inputMessage, ImGuiInputTextFlags_EnterReturnsTrue)) {
             if (!inputMessage.empty()) {
                 onClickSendButton(inputMessage);
                 inputMessage = "";
+                ImGui::SetKeyboardFocusHere();
             }
         }
         ImGui::SameLine();
