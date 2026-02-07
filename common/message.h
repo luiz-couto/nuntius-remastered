@@ -44,6 +44,12 @@ struct UsersListUpdatePayload {
     std::vector<std::string> usernames;
 };
 
+struct ReceivedMessage {
+    std::string msg;
+    std::string from;
+    bool read;
+};
+
 void writeu32(char* &bufferPointer, uint32_t value) {
     uint32_t outVal = htonl(value);
     memcpy(bufferPointer, &outVal, sizeof(outVal));

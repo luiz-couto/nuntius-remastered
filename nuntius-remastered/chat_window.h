@@ -22,6 +22,7 @@ private:
     bool &showChatWindow;
     std::vector<std::string> &usernames;
     std::vector<std::string> &messages;
+    //std::map<std::string, std::vector<ReceivedMessage>> &privateMessages;
 
     std::function<void(std::string message)> onClickSendButton;
     std::function<void(std::string username)> onClickUsername;

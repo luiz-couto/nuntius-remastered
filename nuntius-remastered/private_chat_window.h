@@ -19,7 +19,7 @@
 class PrivateChatWindow {
 private:
     bool &showPrivateChatWindow;
-    std::map<std::string, std::vector<std::string>> &privateMessages;
+    std::map<std::string, std::vector<ReceivedMessage>> &privateMessages;
     std::string &selectedUser;
     std::function<void(std::string message)> onClickSendButton;
 
@@ -27,7 +27,7 @@ private:
     bool refocusInput = true;
 
 public:
-    PrivateChatWindow(bool &_showPrivateChatWindow, std::map<std::string, std::vector<std::string>> &_privateMessages, std::string &_selectedUser, std::function<void(std::string message)> _onClickSendButton):
+    PrivateChatWindow(bool &_showPrivateChatWindow, std::map<std::string, std::vector<ReceivedMessage>> &_privateMessages, std::string &_selectedUser, std::function<void(std::string message)> _onClickSendButton):
         showPrivateChatWindow(_showPrivateChatWindow), privateMessages(_privateMessages), selectedUser(_selectedUser), onClickSendButton(_onClickSendButton) {}
 
     void onClickSend() {
@@ -56,7 +56,9 @@ public:
 
         if (selectedUser != "") {
             for (int i=0; i<privateMessages[selectedUser].size(); i++) {
-                ImGui::TextWrapped(privateMessages[selectedUser][i].c_str());
+                std::string fullMsg = privateMessages[selectedUser][i].from + ": " + privateMessages[selectedUser][i].msg;
+                ImGui::TextWrapped(fullMsg.c_str());
+                privateMessages[selectedUser][i].read = true;
             }
             ImGui::SetScrollHereY(1.0f);
         }

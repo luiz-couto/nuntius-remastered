@@ -28,7 +28,7 @@ int main() {
 
     std::string username = "";
     std::vector<std::string> messages = {};
-    std::map<std::string,std::vector<std::string>> privateMessages = {};
+    std::map<std::string,std::vector<ReceivedMessage>> privateMessages = {};
     std::vector<std::string> usernames = {};
     std::string selectedUserForPrivate = "";
 
@@ -54,7 +54,8 @@ int main() {
             PrivateMessagePayload payload;
             readPrivateMessage(socket, header, payload);
             std::print("received private message from {}: {}\n", payload.username, payload.message);
-            privateMessages[payload.username].push_back(payload.username + ": " + payload.message);
+            ReceivedMessage receivedMsg = {payload.message, payload.username, false};
+            privateMessages[payload.username].push_back(receivedMsg);
         }},
     };
 
@@ -83,7 +84,8 @@ int main() {
     
     PrivateChatWindow *privateChat = new PrivateChatWindow(showPrivateChatWindow, privateMessages, selectedUserForPrivate, 
         [&client, &selectedUserForPrivate, &privateMessages, &username](std::string msg) {
-            privateMessages[selectedUserForPrivate].push_back(username + ": " + msg);
+            ReceivedMessage receivedMsg = {msg, username, true};
+            privateMessages[selectedUserForPrivate].push_back(receivedMsg);
             client->sendPrivateMessageToUser(selectedUserForPrivate, msg);
         });
 
