@@ -30,6 +30,7 @@ private:
     
     std::string inputMessage;
     bool refocusInput = true;
+    int lastMessagesSize = 0;
 
 public:
     ChatWindow(
@@ -102,6 +103,7 @@ public:
         ImGui::TextDisabled("MESSAGES");
         ImGui::Separator();
 
+        std::string lastMessageUser = "";
         for (int i=0; i<messages.size(); i++) {
             std::string fromLabel = messages[i].from;
             if (messages[i].from == username) {
@@ -110,13 +112,19 @@ public:
 
             fromLabel += " says:";
 
-            ImGui::TextDisabled(fromLabel.c_str());
+            if (lastMessageUser != messages[i].from) {
+                ImGui::TextDisabled(fromLabel.c_str());
+            }
+
             std::string msg = "   " + messages[i].msg;
             ImGui::TextWrapped(msg.c_str());
+            lastMessageUser = messages[i].from;
             
             if (i == messages.size() - 1) {
-                
-                ImGui::SetScrollHereY(1.0f);
+                if (lastMessagesSize != messages.size()) {
+                    ImGui::SetScrollHereY(1.0f);
+                    lastMessagesSize = messages.size();
+                }
             }
         }
 
