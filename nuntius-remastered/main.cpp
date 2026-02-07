@@ -71,7 +71,7 @@ int main() {
     });
 
     std::vector<std::string> pmessages = {"Private messages!"};
-    PrivateChatWindow *privateChat = new PrivateChatWindow(showPrivateChatWindow, pmessages, "", [](std::string msg) {});
+    PrivateChatWindow *privateChat = new PrivateChatWindow(showPrivateChatWindow, pmessages, selectedUserForPrivate, [](std::string msg) {});
 
     // showMainWindow
     // showAlertWindow

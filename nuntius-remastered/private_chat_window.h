@@ -19,14 +19,14 @@ class PrivateChatWindow {
 private:
     bool &showPrivateChatWindow;
     std::vector<std::string> &messages;
-    std::string selectedUser;
+    std::string &selectedUser;
     std::function<void(std::string message)> onClickSendButton;
 
     std::string inputMessage;
     bool refocusInput = true;
 
 public:
-    PrivateChatWindow(bool &_showPrivateChatWindow, std::vector<std::string> &_messages, std::string _selectedUser, std::function<void(std::string message)> _onClickSendButton):
+    PrivateChatWindow(bool &_showPrivateChatWindow, std::vector<std::string> &_messages, std::string &_selectedUser, std::function<void(std::string message)> _onClickSendButton):
         showPrivateChatWindow(_showPrivateChatWindow), messages(_messages), selectedUser(_selectedUser), onClickSendButton(_onClickSendButton) {}
 
     void onClickSend() {
