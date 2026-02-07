@@ -24,7 +24,7 @@ class Server {
 private:
     int port;
     SOCKET serverSocket;
-    std::map<std::string, SOCKET*> clients;
+    std::map<std::string, SOCKET> clients;
 
 public:
     Server(int _port = 8000): port(_port) {}
@@ -85,7 +85,7 @@ public:
         return it != clients.end();
     }
 
-    void handleClient(SOCKET &socket) {
+    void handleClient(SOCKET socket) {
         std::string username = "";
         while(true) {
             try {
@@ -112,7 +112,7 @@ public:
                         sendConnectACKMessage(socket);
 
                         UsersListUpdatePayload usersListPayload = {this->getAllUsernames()};
-                        sendToAll([&usersListPayload](SOCKET &otherSocket) {
+                        sendToAll([&usersListPayload](SOCKET otherSocket) {
                             sendUsersListUpdateMessage(otherSocket, usersListPayload);
                         });
                         break;
@@ -127,7 +127,7 @@ public:
                         std::print("Received message from {}: {}\n", username, payload.message);
                         ServerGroupMessagePayload serverPayload = {username, payload.message};
                         
-                        sendToAll([&serverPayload](SOCKET &otherSocket) {
+                        sendToAll([&serverPayload](const SOCKET otherSocket) {
                             sendServerGroupMessage(otherSocket, serverPayload);
                         });
 
@@ -154,13 +154,13 @@ public:
         return usernames;
     }
 
-    void sendToAll(std::function<void(SOCKET&)> sendFunction) {
+    void sendToAll(std::function<void(SOCKET)> sendFunction) {
         for (auto const& [username, socket] : clients) {
-            sendFunction(*socket);
+            sendFunction(socket);
         }
     }
 
-    void addNewClient(std::string username, SOCKET &clientSocket) {
+    void addNewClient(std::string username, SOCKET clientSocket) {
         if (isUsernameInUse(username)) {
             std::string errMessage = "Username already in use!";
             //MessageBoxA(NULL, errMessage.c_str(), "Client Creation Error", MB_OK | MB_ICONERROR);
@@ -168,11 +168,11 @@ public:
             throw errMessage;
         }
 
-        clients[username] = &clientSocket;
+        clients[username] = clientSocket;
         std::print("client {} added!\n", username);
     }
 
-    void removeClient(std::string username, SOCKET &socket) {
+    void removeClient(std::string username, SOCKET socket) {
         this->disconnectClient(socket);
 
         auto it = clients.find(username);
@@ -182,7 +182,7 @@ public:
         }
 
         UsersListUpdatePayload usersListPayload = {this->getAllUsernames()};
-        sendToAll([&usersListPayload](SOCKET &otherSocket) {
+        sendToAll([&usersListPayload](const SOCKET otherSocket) {
             sendUsersListUpdateMessage(otherSocket, usersListPayload);
         });
     }

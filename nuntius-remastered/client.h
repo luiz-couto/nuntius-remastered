@@ -12,7 +12,7 @@
 #include "message.h"
 #include "exceptions.h"
 
-using ActionMapT = std::map<MessageType, std::function<void(SOCKET &socket, Header &header)>>;
+using ActionMapT = std::map<MessageType, std::function<void(SOCKET socket, Header &header)>>;
 
 class Client {
 private:
