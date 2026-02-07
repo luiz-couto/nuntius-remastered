@@ -31,7 +31,7 @@ int main() {
     bool showPrivateChatWindow = false;
 
     std::string username = "";
-    std::vector<std::string> messages = {};
+    std::vector<ReceivedMessage> messages = {};
     std::map<std::string,std::vector<ReceivedMessage>> privateMessages = {};
     std::vector<std::string> usernames = {};
     std::string selectedUserForPrivate = "";
@@ -46,8 +46,8 @@ int main() {
             ServerGroupMessagePayload payload;
             readServerGroupMessage(socket, header, payload);
             std::println("received group message from {}: {}", payload.username, payload.message);
-            
-            messages.push_back(payload.username + ": " + payload.message);
+            ReceivedMessage receivedMsg = {payload.message, payload.username, true};
+            messages.push_back(receivedMsg);
             if (payload.username != username) playMusic(system, "sounds/notification.mp3");
         }},
         {MessageType::USERS_LIST_UPDATE, [&usernames](SOCKET socket, Header &header) {
@@ -80,7 +80,7 @@ int main() {
     LoginWindow *login = new LoginWindow(showLoginWindow, username, onClickLogin);
     
     
-    ChatWindow *chat = new ChatWindow(showChatWindow, usernames, messages, privateMessages, [&client](std::string msg) {
+    ChatWindow *chat = new ChatWindow(showChatWindow, username, usernames, messages, privateMessages, [&client](std::string msg) {
         client->sendMessage(msg);
     }, [&showPrivateChatWindow, &selectedUserForPrivate, &username](std::string usernameFromList) {
         if (usernameFromList != username) {

@@ -20,8 +20,9 @@
 class ChatWindow {
 private:
     bool &showChatWindow;
+    std::string &username;
     std::vector<std::string> &usernames;
-    std::vector<std::string> &messages;
+    std::vector<ReceivedMessage> &messages;
     std::map<std::string, std::vector<ReceivedMessage>> &privateMessages;
 
     std::function<void(std::string message)> onClickSendButton;
@@ -33,13 +34,15 @@ private:
 public:
     ChatWindow(
         bool &_showChatWindow,
+        std::string &_username,
         std::vector<std::string> &_usernames, 
-        std::vector<std::string> &_messages,
+        std::vector<ReceivedMessage> &_messages,
         std::map<std::string, std::vector<ReceivedMessage>> &_privateMessages,
         std::function<void(std::string message)> _onClickSendButton, 
         std::function<void(std::string username)> _onClickUsername
     ):
         showChatWindow(_showChatWindow),
+        username(_username),
         usernames(_usernames), 
         messages(_messages),
         privateMessages(_privateMessages),
@@ -100,8 +103,21 @@ public:
         ImGui::Separator();
 
         for (int i=0; i<messages.size(); i++) {
-            ImGui::TextWrapped(messages[i].c_str());
-            ImGui::SetScrollHereY(1.0f);
+            std::string fromLabel = messages[i].from;
+            if (messages[i].from == username) {
+                fromLabel += " (You)";
+            }
+
+            fromLabel += " says:";
+
+            ImGui::TextDisabled(fromLabel.c_str());
+            std::string msg = "   " + messages[i].msg;
+            ImGui::TextWrapped(msg.c_str());
+            
+            if (i == messages.size() - 1) {
+                
+                ImGui::SetScrollHereY(1.0f);
+            }
         }
 
         ImGui::EndChild();
