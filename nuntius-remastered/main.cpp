@@ -47,7 +47,12 @@ int main() {
             readUsersListUpdateMessage(socket, header, payload);
             std::print("received users list update: {}\n", payload.usernames);
             usernames = payload.usernames;
-        }}
+        }},
+        {MessageType::PRIVATE_MESSAGE, [](SOCKET socket, Header &header) {
+            PrivateMessagePayload payload;
+            readPrivateMessage(socket, header, payload);
+            std::print("received private message from {}: {}\n", payload.username, payload.message);
+        }},
     };
 
     Client *client = new Client(actionMap);
@@ -73,7 +78,10 @@ int main() {
     });
 
     std::vector<std::string> pmessages = {"Private messages!"};
-    PrivateChatWindow *privateChat = new PrivateChatWindow(showPrivateChatWindow, pmessages, selectedUserForPrivate, [](std::string msg) {});
+    PrivateChatWindow *privateChat = new PrivateChatWindow(showPrivateChatWindow, pmessages, selectedUserForPrivate, 
+        [&client, &selectedUserForPrivate](std::string msg) {
+           client->sendPrivateMessageToUser(selectedUserForPrivate, msg);
+        });
 
     // showMainWindow
     // showAlertWindow
