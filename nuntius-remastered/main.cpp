@@ -82,8 +82,9 @@ int main() {
 
     
     PrivateChatWindow *privateChat = new PrivateChatWindow(showPrivateChatWindow, privateMessages, selectedUserForPrivate, 
-        [&client, &selectedUserForPrivate](std::string msg) {
-           client->sendPrivateMessageToUser(selectedUserForPrivate, msg);
+        [&client, &selectedUserForPrivate, &privateMessages, &username](std::string msg) {
+            privateMessages[selectedUserForPrivate].push_back(username + ": " + msg);
+            client->sendPrivateMessageToUser(selectedUserForPrivate, msg);
         });
 
     // showMainWindow
