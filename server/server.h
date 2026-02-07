@@ -8,6 +8,7 @@
 #include <print>
 #include <format>
 #include <map>
+#include <functional>
 #include "message.h"
 #include "exceptions.h"
 
@@ -109,6 +110,11 @@ public:
                         this->addNewClient(payload.username, socket);
                         username = payload.username;
                         sendConnectACKMessage(socket);
+
+                        UsersListUpdatePayload usersListPayload = {this->getAllUsernames()};
+                        sendToAll([&usersListPayload](SOCKET &otherSocket) {
+                            sendUsersListUpdateMessage(otherSocket, usersListPayload);
+                        });
                         break;
                     }
                     case GROUP_MESSAGE: {
@@ -121,9 +127,10 @@ public:
                         std::print("Received message from {}: {}\n", username, payload.message);
                         ServerGroupMessagePayload serverPayload = {username, payload.message};
                         
-                        for (auto const& [otherUsername, otherSocket] : clients) {
-                            sendServerGroupMessage(*otherSocket, serverPayload);
-                        }
+                        sendToAll([&serverPayload](SOCKET &otherSocket) {
+                            sendServerGroupMessage(otherSocket, serverPayload);
+                        });
+
                         break;
                     }
                     default: {
@@ -136,6 +143,20 @@ public:
                 this->removeClient(username, socket);
                 return;
             }
+        }
+    }
+
+    std::vector<std::string> getAllUsernames() {
+        std::vector<std::string> usernames;
+        for (auto const& [username, socket] : clients) {
+            usernames.push_back(username);
+        }
+        return usernames;
+    }
+
+    void sendToAll(std::function<void(SOCKET&)> sendFunction) {
+        for (auto const& [username, socket] : clients) {
+            sendFunction(*socket);
         }
     }
 
@@ -159,6 +180,11 @@ public:
             clients.erase(it);
             std::print("client {} removed\n", username);
         }
+
+        UsersListUpdatePayload usersListPayload = {this->getAllUsernames()};
+        sendToAll([&usersListPayload](SOCKET &otherSocket) {
+            sendUsersListUpdateMessage(otherSocket, usersListPayload);
+        });
     }
 
     void disconnectClient(SOCKET &socket) {

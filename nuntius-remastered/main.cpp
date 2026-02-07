@@ -24,6 +24,7 @@ int main() {
     bool showChatWindow = false;
     std::string username = "";
     std::vector<std::string> messages = {};
+    std::vector<std::string> usernames = {};
 
     ActionMapT actionMap = {
         {MessageType::CONNECT_ACK, [&showLoginWindow, &showChatWindow](SOCKET &socket, Header &header) { 
@@ -36,6 +37,12 @@ int main() {
             readServerGroupMessage(socket, header, payload);
             std::println("received group message from {}: {}", payload.username, payload.message);
             messages.push_back(payload.username + ": " + payload.message);
+        }},
+        {MessageType::USERS_LIST_UPDATE, [&usernames](SOCKET &socket, Header &header) {
+            UsersListUpdatePayload payload;
+            readUsersListUpdateMessage(socket, header, payload);
+            std::print("received users list update: {}\n", payload.usernames);
+            usernames = payload.usernames;
         }}
     };
 
@@ -51,7 +58,7 @@ int main() {
     };
     LoginWindow *login = new LoginWindow(showLoginWindow, username, onClickLogin);
     
-    std::vector<std::string> usernames = {"cat", "dog"};
+    
     ChatWindow *chat = new ChatWindow(showChatWindow, usernames, messages, [&client](std::string msg) {
         client->sendMessage(msg);
     });

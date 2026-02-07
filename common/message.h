@@ -12,7 +12,8 @@ enum MessageType {
     CONNECT_ACK,
     GROUP_MESSAGE,
     SERVER_GROUP_MESSAGE,
-    PRIVATE_MESSAGE
+    PRIVATE_MESSAGE,
+    USERS_LIST_UPDATE
 };
 
 struct Header {
@@ -32,6 +33,10 @@ struct GroupMessagePayload {
 struct ServerGroupMessagePayload {
     std::string username;
     std::string message;
+};
+
+struct UsersListUpdatePayload {
+    std::vector<std::string> usernames;
 };
 
 void writeu32(char* &bufferPointer, uint32_t value) {
@@ -158,6 +163,31 @@ void sendServerGroupMessage(SOCKET &socket, ServerGroupMessagePayload &payload) 
     send(socket, buffer.data(), static_cast<int>(buffer.size()), 0);
 }
 
+void sendUsersListUpdateMessage(SOCKET &socket, UsersListUpdatePayload &payload) {
+    uint32_t usersCount = payload.usernames.size();
+    uint32_t payloadLength = sizeof(uint32_t);
+
+    for (const std::string &username : payload.usernames) {
+        payloadLength += sizeof(uint32_t) + username.size();
+    }
+
+    Header header = { USERS_LIST_UPDATE, payloadLength };
+
+    std::vector<char> buffer(sizeof(Header) + payloadLength);
+    char* bufferPointer = buffer.data();
+
+    writeu32(bufferPointer, header.type);
+    writeu32(bufferPointer, header.length);
+
+    writeu32(bufferPointer, usersCount);
+    for (const std::string &username : payload.usernames) {
+        writeu32(bufferPointer, username.size());
+        writeString(bufferPointer, username);
+    }
+
+    send(socket, buffer.data(), static_cast<int>(buffer.size()), 0);
+}
+
 void readMessageHeader(SOCKET &socket, Header &header) {
     std::vector<char> buffer(sizeof(Header));
     receiveAll(socket, buffer.data(), buffer.size());
@@ -204,4 +234,23 @@ void readServerGroupMessage(SOCKET &socket, Header &header, ServerGroupMessagePa
     uint32_t usernameLenght;
     readu32(bufferPointer, usernameLenght);
     readString(bufferPointer, payload.username, usernameLenght);
+}
+
+void readUsersListUpdateMessage(SOCKET &socket, Header &header, UsersListUpdatePayload &payload) {
+    std::vector<char> payloadBuffer(header.length);
+    receiveAll(socket, payloadBuffer.data(), payloadBuffer.size());
+
+    char* bufferPointer = payloadBuffer.data();
+
+    uint32_t usersCount;
+    readu32(bufferPointer, usersCount);
+
+    for (uint32_t i = 0; i < usersCount; i++) {
+        uint32_t usernameLenght;
+        readu32(bufferPointer, usernameLenght);
+
+        std::string username;
+        readString(bufferPointer, username, usernameLenght);
+        payload.usernames.push_back(username);
+    }
 }
