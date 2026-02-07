@@ -60,6 +60,9 @@
     <ClInclude Include="chat_window.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="private_chat_window.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="imgui.cpp">

@@ -2,6 +2,7 @@
 #include "imgui_helper.h"
 #include "login_window.h"
 #include "chat_window.h"
+#include "private_chat_window.h"
 #include <print>
 #include <format>
 
@@ -22,9 +23,12 @@ int main() {
 
     bool showLoginWindow = true;
     bool showChatWindow = false;
+    bool showPrivateChatWindow = false;
+
     std::string username = "";
     std::vector<std::string> messages = {};
     std::vector<std::string> usernames = {};
+    std::string selectedUserForPrivate = "";
 
     ActionMapT actionMap = {
         {MessageType::CONNECT_ACK, [&showLoginWindow, &showChatWindow](SOCKET socket, Header &header) { 
@@ -61,7 +65,13 @@ int main() {
     
     ChatWindow *chat = new ChatWindow(showChatWindow, usernames, messages, [&client](std::string msg) {
         client->sendMessage(msg);
+    }, [&showPrivateChatWindow, &selectedUserForPrivate](std::string username) {
+        showPrivateChatWindow = true;
+        selectedUserForPrivate = username;
     });
+
+    std::vector<std::string> pmessages = {"Private messages!"};
+    PrivateChatWindow *privateChat = new PrivateChatWindow(showPrivateChatWindow, pmessages, "", [](std::string msg) {});
 
     // showMainWindow
     // showAlertWindow
@@ -83,6 +93,7 @@ int main() {
         // ---------------------------------------------------
         if (showLoginWindow) login->render();
         if (showChatWindow) chat->render();
+        if (showPrivateChatWindow) privateChat->render();
 
         // ---------------------------------------------------
         uiHelper::render(clear_color);
