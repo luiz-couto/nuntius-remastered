@@ -3,6 +3,8 @@
 #include <string>
 #include <functional>
 #include <vector>
+#include <format>
+#include <print>
 
 #include "imgui.h"
 #include "imgui_stdlib.h"
@@ -22,11 +24,20 @@ private:
     std::vector<std::string> &messages;
     std::function<void(std::string message)> onClickSendButton;
     std::string inputMessage;
+    bool refocusInput = true;
 
 public:
     ChatWindow(bool &_showChatWindow, std::vector<std::string> &_usernames, std::vector<std::string> &_messages, std::function<void(std::string message)> _onClickSendButton):
         showChatWindow(_showChatWindow), usernames(_usernames), messages(_messages), onClickSendButton(_onClickSendButton) {}
 
+    void onClickSend() {
+        if (!inputMessage.empty()) {
+            onClickSendButton(inputMessage);
+            inputMessage = "";
+            refocusInput = true;
+        }
+    }
+    
     void render() {
         // Setup
         ImGui::SetNextWindowSize(ImVec2(CHAT_WINDOW_WIDTH, CHAT_WINDOW_HEIGHT));
@@ -76,18 +87,18 @@ public:
 
         ImGui::SetNextItemWidth(inputWidth);
 
-        ImGui::SetKeyboardFocusHere();
-        if (ImGui::InputText("##inputMessage", &inputMessage, ImGuiInputTextFlags_EnterReturnsTrue)) {
-            if (!inputMessage.empty()) {
-                onClickSendButton(inputMessage);
-                inputMessage = "";
-                ImGui::SetKeyboardFocusHere();
-            }
+        if (refocusInput) {
+            ImGui::SetKeyboardFocusHere();
+            refocusInput = false;
         }
+
+        if (ImGui::InputText("##inputMessage", &inputMessage, ImGuiInputTextFlags_EnterReturnsTrue)) {
+            onClickSend();
+        }
+
         ImGui::SameLine();
-        if (ImGui::Button("SEND")) { 
-            onClickSendButton(inputMessage);
-            inputMessage = "";
+        if (ImGui::Button("SEND")) {
+            onClickSend();
         }
 
         ImGui::EndChild();
