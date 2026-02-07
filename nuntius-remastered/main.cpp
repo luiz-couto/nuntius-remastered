@@ -3,12 +3,16 @@
 #include "login_window.h"
 #include "chat_window.h"
 #include "private_chat_window.h"
+#include "sounds.h"
 #include <print>
 #include <format>
 #include <map>
 
 // Main code
 int main() {
+    FMOD::System *system;
+    FMOD::System_Create(&system);
+    system->init(512, FMOD_INIT_NORMAL, NULL);
 
     float main_scale = uiHelper::getMainScale();
     WNDCLASSEXW wc = uiHelper::createWindowClass();
@@ -38,11 +42,13 @@ int main() {
             std::println("connected to the server!");
             showChatWindow = true;
         }},
-        {MessageType::SERVER_GROUP_MESSAGE, [&messages](SOCKET socket, Header &header) {
+        {MessageType::SERVER_GROUP_MESSAGE, [&messages, &system, &username](SOCKET socket, Header &header) {
             ServerGroupMessagePayload payload;
             readServerGroupMessage(socket, header, payload);
             std::println("received group message from {}: {}", payload.username, payload.message);
+            
             messages.push_back(payload.username + ": " + payload.message);
+            if (payload.username != username) playMusic(system, "sounds/notification.mp3");
         }},
         {MessageType::USERS_LIST_UPDATE, [&usernames](SOCKET socket, Header &header) {
             UsersListUpdatePayload payload;
@@ -50,12 +56,14 @@ int main() {
             std::print("received users list update: {}\n", payload.usernames);
             usernames = payload.usernames;
         }},
-        {MessageType::PRIVATE_MESSAGE, [&privateMessages](SOCKET socket, Header &header) {
+        {MessageType::PRIVATE_MESSAGE, [&privateMessages, &system, &username](SOCKET socket, Header &header) {
             PrivateMessagePayload payload;
             readPrivateMessage(socket, header, payload);
             std::print("received private message from {}: {}\n", payload.username, payload.message);
+            
             ReceivedMessage receivedMsg = {payload.message, payload.username, false};
             privateMessages[payload.username].push_back(receivedMsg);
+            if (payload.username != username) playMusic(system, "sounds/guitar.wav");
         }},
     };
 
@@ -116,5 +124,8 @@ int main() {
     }
 
     uiHelper::cleanUpIMGUI(hwnd, wc);
+
+    system->close();
+    system->release();
     return 0;
 }
