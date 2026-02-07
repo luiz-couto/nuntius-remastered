@@ -72,7 +72,7 @@ int main() {
     LoginWindow *login = new LoginWindow(showLoginWindow, username, onClickLogin);
     
     
-    ChatWindow *chat = new ChatWindow(showChatWindow, usernames, messages, [&client](std::string msg) {
+    ChatWindow *chat = new ChatWindow(showChatWindow, usernames, messages, privateMessages, [&client](std::string msg) {
         client->sendMessage(msg);
     }, [&showPrivateChatWindow, &selectedUserForPrivate, &username](std::string usernameFromList) {
         if (usernameFromList != username) {

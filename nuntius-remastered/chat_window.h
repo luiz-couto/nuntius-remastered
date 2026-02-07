@@ -22,7 +22,7 @@ private:
     bool &showChatWindow;
     std::vector<std::string> &usernames;
     std::vector<std::string> &messages;
-    //std::map<std::string, std::vector<ReceivedMessage>> &privateMessages;
+    std::map<std::string, std::vector<ReceivedMessage>> &privateMessages;
 
     std::function<void(std::string message)> onClickSendButton;
     std::function<void(std::string username)> onClickUsername;
@@ -31,8 +31,20 @@ private:
     bool refocusInput = true;
 
 public:
-    ChatWindow(bool &_showChatWindow, std::vector<std::string> &_usernames, std::vector<std::string> &_messages, std::function<void(std::string message)> _onClickSendButton, std::function<void(std::string username)> _onClickUsername):
-        showChatWindow(_showChatWindow), usernames(_usernames), messages(_messages), onClickSendButton(_onClickSendButton), onClickUsername(_onClickUsername)  {}
+    ChatWindow(
+        bool &_showChatWindow,
+        std::vector<std::string> &_usernames, 
+        std::vector<std::string> &_messages,
+        std::map<std::string, std::vector<ReceivedMessage>> &_privateMessages,
+        std::function<void(std::string message)> _onClickSendButton, 
+        std::function<void(std::string username)> _onClickUsername
+    ):
+        showChatWindow(_showChatWindow),
+        usernames(_usernames), 
+        messages(_messages),
+        privateMessages(_privateMessages),
+        onClickSendButton(_onClickSendButton), 
+        onClickUsername(_onClickUsername)  {}
 
     void onClickSend() {
         if (!inputMessage.empty()) {
@@ -65,8 +77,16 @@ public:
                 ImGui::EndPopup();
             }
 
-            ImGui::SameLine();
-            ImGui::TextColored(ONLINE_STATUS_COLOR, "●");
+            uint32_t unreadCount = 0;
+            for (const auto& msg : privateMessages[usernames[i]]) {
+                if (!msg.read) {
+                    unreadCount++;
+                }
+            }
+            if (unreadCount != 0) {
+                ImGui::SameLine();
+                ImGui::TextColored(ONLINE_STATUS_COLOR, std::format("{} ●", unreadCount).c_str());
+            }
         }
 
         ImGui::EndChild();
