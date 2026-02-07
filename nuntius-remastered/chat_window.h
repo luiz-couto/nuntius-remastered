@@ -12,8 +12,8 @@
 #define CHAT_WINDOW_NAME "Nuntius Remastered"
 #define CHAT_WINDOW_WIDTH 800
 #define CHAT_WINDOW_HEIGHT 500
-#define CHAT_WINDOW_POS_X 100
-#define CHAT_WINDOW_POS_Y 100
+#define CHAT_WINDOW_POS_X 20
+#define CHAT_WINDOW_POS_Y 20
 
 #define ONLINE_STATUS_COLOR ImVec4(0.55f, 0.85f, 0.55f, 1.00f)
 

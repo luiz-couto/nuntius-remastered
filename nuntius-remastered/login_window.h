@@ -9,8 +9,8 @@
 #define LOGIN_WINDOW_NAME "Login"
 #define LOGIN_WINDOW_WIDTH 800
 #define LOGIN_WINDOW_HEIGHT 500
-#define LOGIN_WINDOW_POS_X 100
-#define LOGIN_WINDOW_POS_Y 100
+#define LOGIN_WINDOW_POS_X 20
+#define LOGIN_WINDOW_POS_Y 20
 
 #define LOGIN_MESSAGE "Hello! Enter your username to start chatting:"
 

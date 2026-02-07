@@ -13,8 +13,8 @@
 #define PRIVATE_CHAT_WINDOW_NAME " | Private Chat"
 #define CHAT_WINDOW_WIDTH 800
 #define CHAT_WINDOW_HEIGHT 500
-#define CHAT_WINDOW_POS_X 300
-#define CHAT_WINDOW_POS_Y 300
+#define CHAT_WINDOW_POS_X 20
+#define CHAT_WINDOW_POS_Y 600
 
 class PrivateChatWindow {
 private:
