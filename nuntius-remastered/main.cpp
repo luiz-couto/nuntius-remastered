@@ -90,7 +90,7 @@ int main() {
     });
 
     
-    PrivateChatWindow *privateChat = new PrivateChatWindow(showPrivateChatWindow, privateMessages, selectedUserForPrivate, 
+    PrivateChatWindow *privateChat = new PrivateChatWindow(showPrivateChatWindow, username, privateMessages, selectedUserForPrivate, 
         [&client, &selectedUserForPrivate, &privateMessages, &username](std::string msg) {
             ReceivedMessage receivedMsg = {msg, username, true};
             privateMessages[selectedUserForPrivate].push_back(receivedMsg);
