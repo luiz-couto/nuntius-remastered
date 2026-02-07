@@ -80,6 +80,7 @@ public:
 
         for (int i=0; i<messages.size(); i++) {
             ImGui::TextWrapped(messages[i].c_str());
+            ImGui::SetScrollHereY(1.0f);
         }
 
         ImGui::EndChild();

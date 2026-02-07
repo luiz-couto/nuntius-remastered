@@ -58,6 +58,7 @@ public:
             for (int i=0; i<privateMessages[selectedUser].size(); i++) {
                 ImGui::TextWrapped(privateMessages[selectedUser][i].c_str());
             }
+            ImGui::SetScrollHereY(1.0f);
         }
 
         ImGui::EndChild();
