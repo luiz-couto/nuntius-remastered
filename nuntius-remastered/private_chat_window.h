@@ -5,6 +5,7 @@
 #include <vector>
 #include <format>
 #include <print>
+#include <map>
 
 #include "imgui.h"
 #include "imgui_stdlib.h"
@@ -18,7 +19,7 @@
 class PrivateChatWindow {
 private:
     bool &showPrivateChatWindow;
-    std::vector<std::string> &messages;
+    std::map<std::string, std::vector<std::string>> &privateMessages;
     std::string &selectedUser;
     std::function<void(std::string message)> onClickSendButton;
 
@@ -26,8 +27,8 @@ private:
     bool refocusInput = true;
 
 public:
-    PrivateChatWindow(bool &_showPrivateChatWindow, std::vector<std::string> &_messages, std::string &_selectedUser, std::function<void(std::string message)> _onClickSendButton):
-        showPrivateChatWindow(_showPrivateChatWindow), messages(_messages), selectedUser(_selectedUser), onClickSendButton(_onClickSendButton) {}
+    PrivateChatWindow(bool &_showPrivateChatWindow, std::map<std::string, std::vector<std::string>> &_privateMessages, std::string &_selectedUser, std::function<void(std::string message)> _onClickSendButton):
+        showPrivateChatWindow(_showPrivateChatWindow), privateMessages(_privateMessages), selectedUser(_selectedUser), onClickSendButton(_onClickSendButton) {}
 
     void onClickSend() {
         if (!inputMessage.empty()) {
@@ -53,8 +54,10 @@ public:
         ImGui::TextDisabled("MESSAGES");
         ImGui::Separator();
 
-        for (int i=0; i<messages.size(); i++) {
-            ImGui::TextWrapped(messages[i].c_str());
+        if (selectedUser != "") {
+            for (int i=0; i<privateMessages[selectedUser].size(); i++) {
+                ImGui::TextWrapped(privateMessages[selectedUser][i].c_str());
+            }
         }
 
         ImGui::EndChild();

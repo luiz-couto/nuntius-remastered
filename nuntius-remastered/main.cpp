@@ -5,6 +5,7 @@
 #include "private_chat_window.h"
 #include <print>
 #include <format>
+#include <map>
 
 // Main code
 int main() {
@@ -27,6 +28,7 @@ int main() {
 
     std::string username = "";
     std::vector<std::string> messages = {};
+    std::map<std::string,std::vector<std::string>> privateMessages = {};
     std::vector<std::string> usernames = {};
     std::string selectedUserForPrivate = "";
 
@@ -48,10 +50,11 @@ int main() {
             std::print("received users list update: {}\n", payload.usernames);
             usernames = payload.usernames;
         }},
-        {MessageType::PRIVATE_MESSAGE, [](SOCKET socket, Header &header) {
+        {MessageType::PRIVATE_MESSAGE, [&privateMessages](SOCKET socket, Header &header) {
             PrivateMessagePayload payload;
             readPrivateMessage(socket, header, payload);
             std::print("received private message from {}: {}\n", payload.username, payload.message);
+            privateMessages[payload.username].push_back(payload.username + ": " + payload.message);
         }},
     };
 
@@ -77,8 +80,8 @@ int main() {
         }
     });
 
-    std::vector<std::string> pmessages = {"Private messages!"};
-    PrivateChatWindow *privateChat = new PrivateChatWindow(showPrivateChatWindow, pmessages, selectedUserForPrivate, 
+    
+    PrivateChatWindow *privateChat = new PrivateChatWindow(showPrivateChatWindow, privateMessages, selectedUserForPrivate, 
         [&client, &selectedUserForPrivate](std::string msg) {
            client->sendPrivateMessageToUser(selectedUserForPrivate, msg);
         });
