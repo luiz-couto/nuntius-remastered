@@ -19,6 +19,7 @@ private:
     bool &showLoginWindow;
     std::string &username;
     std::function<void()> onClickButton;
+    bool refocusInput = true;
 
 public:
     LoginWindow(bool &_showLoginWindow, std::string &_username, std::function<void()> _onClickButton):
@@ -37,12 +38,22 @@ public:
         // Input
         ImGui::SetCursorPosX(LOGIN_WINDOW_WIDTH * 0.5f - ImGui::CalcTextSize(LOGIN_MESSAGE).x * 0.5f);
         ImGui::SetNextItemWidth(ImGui::CalcTextSize(LOGIN_MESSAGE).x);
-        ImGui::InputText("##username", &username);
+        
+        if (refocusInput) {
+            ImGui::SetKeyboardFocusHere();
+            refocusInput = false;
+        }
+
+        if (ImGui::InputText("##username", &username, ImGuiInputTextFlags_EnterReturnsTrue)) {
+            onClickButton();
+            refocusInput = true;
+        }
 
         // Button
         ImGui::SetCursorPosX(LOGIN_WINDOW_WIDTH * 0.5f - ImGui::CalcTextSize(LOGIN_MESSAGE).x * 0.5f);
         if (ImGui::Button("Login", ImVec2(ImGui::CalcTextSize(LOGIN_MESSAGE).x, 40.0f))) { 
             onClickButton();
+            refocusInput = true;
         }
 
         ImGui::End();
