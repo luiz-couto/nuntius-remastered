@@ -65,9 +65,11 @@ int main() {
     
     ChatWindow *chat = new ChatWindow(showChatWindow, usernames, messages, [&client](std::string msg) {
         client->sendMessage(msg);
-    }, [&showPrivateChatWindow, &selectedUserForPrivate](std::string username) {
-        showPrivateChatWindow = true;
-        selectedUserForPrivate = username;
+    }, [&showPrivateChatWindow, &selectedUserForPrivate, &username](std::string usernameFromList) {
+        if (usernameFromList != username) {
+            showPrivateChatWindow = true;
+            selectedUserForPrivate = usernameFromList;
+        }
     });
 
     std::vector<std::string> pmessages = {"Private messages!"};
