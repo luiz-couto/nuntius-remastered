@@ -133,6 +133,22 @@ public:
 
                         break;
                     }
+                    case PRIVATE_MESSAGE: {
+                        PrivateMessagePayload payload;
+                        try {
+                            readPrivateMessage(socket, header, payload);
+                        } catch (std::runtime_error err) {
+                            throw FatalClientException("Failed to receive message, closing socket connection...");
+                        }
+                        std::print("Received private message from {} to {}: {}\n", username, payload.username, payload.message);
+
+                        auto it = clients.find(payload.username);
+                        if (it != clients.end()) {
+                            PrivateMessagePayload serverPayload = {username, payload.message};
+                            sendPrivateMessage(it->second, serverPayload);
+                        }
+
+                    }
                     default: {
                         continue;
                     }

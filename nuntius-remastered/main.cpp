@@ -2,8 +2,10 @@
 #include "imgui_helper.h"
 #include "login_window.h"
 #include "chat_window.h"
+#include "private_chat_window.h"
 #include <print>
 #include <format>
+#include <map>
 
 // Main code
 int main() {
@@ -22,9 +24,13 @@ int main() {
 
     bool showLoginWindow = true;
     bool showChatWindow = false;
+    bool showPrivateChatWindow = false;
+
     std::string username = "";
     std::vector<std::string> messages = {};
+    std::map<std::string,std::vector<std::string>> privateMessages = {};
     std::vector<std::string> usernames = {};
+    std::string selectedUserForPrivate = "";
 
     ActionMapT actionMap = {
         {MessageType::CONNECT_ACK, [&showLoginWindow, &showChatWindow](SOCKET socket, Header &header) { 
@@ -43,7 +49,13 @@ int main() {
             readUsersListUpdateMessage(socket, header, payload);
             std::print("received users list update: {}\n", payload.usernames);
             usernames = payload.usernames;
-        }}
+        }},
+        {MessageType::PRIVATE_MESSAGE, [&privateMessages](SOCKET socket, Header &header) {
+            PrivateMessagePayload payload;
+            readPrivateMessage(socket, header, payload);
+            std::print("received private message from {}: {}\n", payload.username, payload.message);
+            privateMessages[payload.username].push_back(payload.username + ": " + payload.message);
+        }},
     };
 
     Client *client = new Client(actionMap);
@@ -61,7 +73,19 @@ int main() {
     
     ChatWindow *chat = new ChatWindow(showChatWindow, usernames, messages, [&client](std::string msg) {
         client->sendMessage(msg);
+    }, [&showPrivateChatWindow, &selectedUserForPrivate, &username](std::string usernameFromList) {
+        if (usernameFromList != username) {
+            showPrivateChatWindow = true;
+            selectedUserForPrivate = usernameFromList;
+        }
     });
+
+    
+    PrivateChatWindow *privateChat = new PrivateChatWindow(showPrivateChatWindow, privateMessages, selectedUserForPrivate, 
+        [&client, &selectedUserForPrivate, &privateMessages, &username](std::string msg) {
+            privateMessages[selectedUserForPrivate].push_back(username + ": " + msg);
+            client->sendPrivateMessageToUser(selectedUserForPrivate, msg);
+        });
 
     // showMainWindow
     // showAlertWindow
@@ -83,6 +107,7 @@ int main() {
         // ---------------------------------------------------
         if (showLoginWindow) login->render();
         if (showChatWindow) chat->render();
+        if (showPrivateChatWindow) privateChat->render();
 
         // ---------------------------------------------------
         uiHelper::render(clear_color);

@@ -140,6 +140,7 @@
     <ClInclude Include="imstb_truetype.h" />
     <ClInclude Include="login_window.h" />
     <ClInclude Include="message.h" />
+    <ClInclude Include="private_chat_window.h" />
     <ClInclude Include="server.h" />
   </ItemGroup>
   <ItemGroup>

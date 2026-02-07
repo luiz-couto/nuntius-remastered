@@ -35,6 +35,11 @@ struct ServerGroupMessagePayload {
     std::string message;
 };
 
+struct PrivateMessagePayload {
+    std::string username;
+    std::string message;
+};
+
 struct UsersListUpdatePayload {
     std::vector<std::string> usernames;
 };
@@ -163,6 +168,31 @@ void sendServerGroupMessage(SOCKET socket, ServerGroupMessagePayload &payload) {
     send(socket, buffer.data(), static_cast<int>(buffer.size()), 0);
 }
 
+void sendPrivateMessage(SOCKET socket, PrivateMessagePayload &payload) {
+    uint32_t messageLength = payload.message.size();
+    uint32_t usernameLength = payload.username.size();
+    if (messageLength == 0 || usernameLength == 0) {
+        throw "message and username field are required";
+    }
+
+    uint32_t payloadLength = sizeof(uint32_t) + messageLength + sizeof(uint32_t) + usernameLength;
+    Header header = { PRIVATE_MESSAGE, payloadLength };
+
+    std::vector<char> buffer(sizeof(Header) + payloadLength);
+    char* bufferPointer = buffer.data();
+
+    writeu32(bufferPointer, header.type);
+    writeu32(bufferPointer, header.length);
+
+    writeu32(bufferPointer, messageLength);
+    writeString(bufferPointer, payload.message);
+
+    writeu32(bufferPointer, usernameLength);
+    writeString(bufferPointer, payload.username);
+
+    send(socket, buffer.data(), static_cast<int>(buffer.size()), 0);
+}
+
 void sendUsersListUpdateMessage(SOCKET socket, UsersListUpdatePayload &payload) {
     uint32_t usersCount = payload.usernames.size();
     uint32_t payloadLength = sizeof(uint32_t);
@@ -222,6 +252,21 @@ void readGroupMessage(SOCKET socket, Header &header, GroupMessagePayload &payloa
 }
 
 void readServerGroupMessage(SOCKET socket, Header &header, ServerGroupMessagePayload &payload) {
+    std::vector<char> payloadBuffer(header.length);
+    receiveAll(socket, payloadBuffer.data(), payloadBuffer.size());
+
+    char* bufferPointer = payloadBuffer.data();
+
+    uint32_t messageLenght;
+    readu32(bufferPointer, messageLenght);
+    readString(bufferPointer, payload.message, messageLenght);
+
+    uint32_t usernameLenght;
+    readu32(bufferPointer, usernameLenght);
+    readString(bufferPointer, payload.username, usernameLenght);
+}
+
+void readPrivateMessage(SOCKET socket, Header &header, PrivateMessagePayload &payload) {
     std::vector<char> payloadBuffer(header.length);
     receiveAll(socket, payloadBuffer.data(), payloadBuffer.size());
 

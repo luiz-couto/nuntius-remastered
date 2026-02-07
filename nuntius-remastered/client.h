@@ -94,4 +94,9 @@ public:
         GroupMessagePayload payload = { message };
         sendGroupMessage(clientSocket, payload);
     }
+
+    void sendPrivateMessageToUser(std::string username, std::string message) {
+        PrivateMessagePayload payload = { username, message };
+        sendPrivateMessage(clientSocket, payload);
+    }
 };

@@ -5,33 +5,30 @@
 #include <vector>
 #include <format>
 #include <print>
+#include <map>
 
 #include "imgui.h"
 #include "imgui_stdlib.h"
 
-#define CHAT_WINDOW_NAME "Nuntius Remastered"
+#define PRIVATE_CHAT_WINDOW_NAME " | Private Chat"
 #define CHAT_WINDOW_WIDTH 800
 #define CHAT_WINDOW_HEIGHT 500
 #define CHAT_WINDOW_POS_X 20
-#define CHAT_WINDOW_POS_Y 20
+#define CHAT_WINDOW_POS_Y 600
 
-#define ONLINE_STATUS_COLOR ImVec4(0.55f, 0.85f, 0.55f, 1.00f)
-
-class ChatWindow {
+class PrivateChatWindow {
 private:
-    bool &showChatWindow;
-    std::vector<std::string> &usernames;
-    std::vector<std::string> &messages;
-
+    bool &showPrivateChatWindow;
+    std::map<std::string, std::vector<std::string>> &privateMessages;
+    std::string &selectedUser;
     std::function<void(std::string message)> onClickSendButton;
-    std::function<void(std::string username)> onClickUsername;
-    
+
     std::string inputMessage;
     bool refocusInput = true;
 
 public:
-    ChatWindow(bool &_showChatWindow, std::vector<std::string> &_usernames, std::vector<std::string> &_messages, std::function<void(std::string message)> _onClickSendButton, std::function<void(std::string username)> _onClickUsername):
-        showChatWindow(_showChatWindow), usernames(_usernames), messages(_messages), onClickSendButton(_onClickSendButton), onClickUsername(_onClickUsername)  {}
+    PrivateChatWindow(bool &_showPrivateChatWindow, std::map<std::string, std::vector<std::string>> &_privateMessages, std::string &_selectedUser, std::function<void(std::string message)> _onClickSendButton):
+        showPrivateChatWindow(_showPrivateChatWindow), privateMessages(_privateMessages), selectedUser(_selectedUser), onClickSendButton(_onClickSendButton) {}
 
     void onClickSend() {
         if (!inputMessage.empty()) {
@@ -42,33 +39,12 @@ public:
     }
     
     void render() {
+        std::string windowName = selectedUser + PRIVATE_CHAT_WINDOW_NAME;
+
         // Setup
         ImGui::SetNextWindowSize(ImVec2(CHAT_WINDOW_WIDTH, CHAT_WINDOW_HEIGHT));
         ImGui::SetNextWindowPos(ImVec2(CHAT_WINDOW_POS_X, CHAT_WINDOW_POS_Y));
-        ImGui::Begin(CHAT_WINDOW_NAME, nullptr, ImGuiWindowFlags_NoCollapse);
-
-        // Users Left Panel
-        ImGui::BeginChild("UsersPanel", ImVec2(200, 0), true); // fixed width, full height - border true
-        ImGui::TextDisabled("ONLINE");
-        ImGui::Separator();
-
-        for (int i=0; i<usernames.size(); i++) {
-            if (ImGui::Selectable(usernames[i].c_str(), false)) {
-                onClickUsername(usernames[i]);
-            }
-
-            if (ImGui::BeginPopupContextItem()) {
-                if (ImGui::MenuItem("Private Message")) {
-                    onClickUsername(usernames[i]);
-                }
-                ImGui::EndPopup();
-            }
-
-            ImGui::SameLine();
-            ImGui::TextColored(ONLINE_STATUS_COLOR, "●");
-        }
-
-        ImGui::EndChild();
+        ImGui::Begin(windowName.c_str(), &showPrivateChatWindow);
 
         // Messages Right Panel
         ImGui::SameLine();
@@ -78,8 +54,10 @@ public:
         ImGui::TextDisabled("MESSAGES");
         ImGui::Separator();
 
-        for (int i=0; i<messages.size(); i++) {
-            ImGui::TextWrapped(messages[i].c_str());
+        if (selectedUser != "") {
+            for (int i=0; i<privateMessages[selectedUser].size(); i++) {
+                ImGui::TextWrapped(privateMessages[selectedUser][i].c_str());
+            }
         }
 
         ImGui::EndChild();
