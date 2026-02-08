@@ -82,7 +82,7 @@ public:
 
             } catch (const FatalServerException &err) {
                 std::print("fatal server exception: {}\n", err.what());
-                onServerFatalException(err.what());
+                onServerFatalException("Unable to connect to the server");
                 return;
             }
         }

@@ -83,6 +83,7 @@ public:
                 std::string msg = "   " + messages[i].msg;
                 ImGui::TextWrapped(msg.c_str());
                 lastMessageUser = messages[i].from;
+                messages[i].read = true;
 
                 if (i == messages.size() - 1) {
                     if (lastMessagesSize != messages.size()) {
