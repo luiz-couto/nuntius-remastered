@@ -13,7 +13,8 @@ enum MessageType {
     GROUP_MESSAGE,
     SERVER_GROUP_MESSAGE,
     PRIVATE_MESSAGE,
-    USERS_LIST_UPDATE
+    USERS_LIST_UPDATE,
+    BAD_REQUEST
 };
 
 struct Header {
@@ -48,6 +49,10 @@ struct ReceivedMessage {
     std::string msg;
     std::string from;
     bool read;
+};
+
+struct BadRequestPayload {
+    std::string error;
 };
 
 void writeu32(char* &bufferPointer, uint32_t value) {
@@ -224,6 +229,27 @@ void sendUsersListUpdateMessage(SOCKET socket, UsersListUpdatePayload &payload) 
     send(socket, buffer.data(), static_cast<int>(buffer.size()), 0);
 }
 
+void sendBadRequestMessage(SOCKET socket, BadRequestPayload &payload) {
+    uint32_t errorLength = payload.error.size();
+    if (errorLength == 0) {
+        throw "message field is required";
+    }
+
+    uint32_t payloadLength = sizeof(uint32_t) + errorLength;
+    Header header = { BAD_REQUEST, payloadLength };
+
+    std::vector<char> buffer(sizeof(Header) + payloadLength);
+    char* bufferPointer = buffer.data();
+
+    writeu32(bufferPointer, header.type);
+    writeu32(bufferPointer, header.length);
+
+    writeu32(bufferPointer, errorLength);
+    writeString(bufferPointer, payload.error);
+
+    send(socket, buffer.data(), static_cast<int>(buffer.size()), 0);
+}
+
 void readMessageHeader(SOCKET socket, Header &header) {
     std::vector<char> buffer(sizeof(Header));
     receiveAll(socket, buffer.data(), buffer.size());
@@ -304,4 +330,16 @@ void readUsersListUpdateMessage(SOCKET socket, Header &header, UsersListUpdatePa
         readString(bufferPointer, username, usernameLenght);
         payload.usernames.push_back(username);
     }
+}
+
+void readBadRequest(SOCKET socket, Header &header, BadRequestPayload &payload) {
+    std::vector<char> payloadBuffer(header.length);
+    receiveAll(socket, payloadBuffer.data(), payloadBuffer.size());
+
+    char* bufferPointer = payloadBuffer.data();
+
+    uint32_t errorLenght;
+    readu32(bufferPointer, errorLenght);
+
+    readString(bufferPointer, payload.error, errorLenght);
 }

@@ -25,3 +25,9 @@ public:
     FatalServerException() : std::runtime_error("Fatal server error") {}
     explicit FatalServerException(const std::string& msg) : std::runtime_error(msg) {}
 };
+
+class BadRequestException : public std::runtime_error {
+public:
+    BadRequestException() : std::runtime_error("Bad request") {}
+    explicit BadRequestException(const std::string& msg) : std::runtime_error(msg) {}
+};

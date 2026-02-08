@@ -30,14 +30,14 @@ int main() {
     bool showLoginWindow = true;
     bool showChatWindow = false;
     bool showPrivateChatWindow = false;
-    bool showAlertWindow = true;
+    bool showAlertWindow = false;
 
     std::string username = "";
     std::vector<ReceivedMessage> messages = {};
     std::map<std::string,std::vector<ReceivedMessage>> privateMessages = {};
     std::vector<std::string> usernames = {};
     std::string selectedUserForPrivate = "";
-    std::string alertMessage = "You don't have enough permissions!";
+    std::string alertMessage = "";
 
     AlertWindow *alert = new AlertWindow(showAlertWindow, alertMessage);
 
@@ -70,9 +70,32 @@ int main() {
             privateMessages[payload.username].push_back(receivedMsg);
             if (payload.username != username) playMusic(system, "sounds/guitar.wav");
         }},
+        {MessageType::BAD_REQUEST, [&alertMessage, &showAlertWindow](SOCKET socket, Header &header) {
+            BadRequestPayload payload;
+            readBadRequest(socket, header, payload);
+            std::print("received bad request message from the server: {}\n", payload.error);
+            alertMessage = payload.error;
+            showAlertWindow = true;
+        }}
     };
 
-    Client *client = new Client(actionMap);
+    std::function<void(std::string err)> onServerFatalException = [
+        &showLoginWindow,
+        &showAlertWindow,
+        &alertMessage,
+        &messages,
+        &privateMessages,
+        &usernames
+    ] (std::string err) {
+        showLoginWindow = true;
+        showAlertWindow = true;
+        alertMessage = err;
+        messages.clear();
+        privateMessages.clear();
+        usernames.clear();
+    };
+
+    Client *client = new Client(actionMap, onServerFatalException);
     client->init();
 
     std::function<void()> onClickLogin = [&client, &username]() {
@@ -84,8 +107,7 @@ int main() {
     };
 
     LoginWindow *login = new LoginWindow(showLoginWindow, username, onClickLogin);
-    
-    
+
     ChatWindow *chat = new ChatWindow(
         showChatWindow, username, usernames, messages, privateMessages, [&client](std::string msg) {
             client->sendMessage(msg);
@@ -96,7 +118,6 @@ int main() {
             }
         }
     );
-
     
     PrivateChatWindow *privateChat = new PrivateChatWindow(
         showPrivateChatWindow, username, privateMessages, selectedUserForPrivate, 

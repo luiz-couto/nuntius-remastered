@@ -107,7 +107,15 @@ public:
                             throw FatalClientException("Failed to connect with client, closing socket connection...");
                         }
                         std::print("Received connection request with username: {}\n", payload.username);
-                        this->addNewClient(payload.username, socket);
+
+                        try {
+                            this->addNewClient(payload.username, socket);
+                        } catch (BadRequestException err) {
+                            BadRequestPayload payload = {err.what()};
+                            sendBadRequestMessage(socket, payload);
+                            break;
+                        }
+
                         username = payload.username;
                         sendConnectACKMessage(socket);
 
@@ -178,10 +186,8 @@ public:
 
     void addNewClient(std::string username, SOCKET clientSocket) {
         if (isUsernameInUse(username)) {
-            std::string errMessage = "Username already in use!";
-            //MessageBoxA(NULL, errMessage.c_str(), "Client Creation Error", MB_OK | MB_ICONERROR);
-            closesocket(clientSocket);
-            throw errMessage;
+            std::string errMessage = "username already in use!";
+            throw BadRequestException(errMessage);
         }
 
         clients[username] = clientSocket;
