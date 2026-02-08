@@ -130,6 +130,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="alert_window.h" />
     <ClInclude Include="chat_window.h" />
     <ClInclude Include="client.h" />
     <ClInclude Include="imconfig.h" />

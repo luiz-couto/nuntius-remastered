@@ -2,6 +2,7 @@
 #include "imgui_helper.h"
 #include "login_window.h"
 #include "chat_window.h"
+#include "alert_window.h"
 #include "private_chat_window.h"
 #include "sounds.h"
 #include <print>
@@ -29,12 +30,16 @@ int main() {
     bool showLoginWindow = true;
     bool showChatWindow = false;
     bool showPrivateChatWindow = false;
+    bool showAlertWindow = true;
 
     std::string username = "";
     std::vector<ReceivedMessage> messages = {};
     std::map<std::string,std::vector<ReceivedMessage>> privateMessages = {};
     std::vector<std::string> usernames = {};
     std::string selectedUserForPrivate = "";
+    std::string alertMessage = "You don't have enough permissions!";
+
+    AlertWindow *alert = new AlertWindow(showAlertWindow, alertMessage);
 
     ActionMapT actionMap = {
         {MessageType::CONNECT_ACK, [&showLoginWindow, &showChatWindow](SOCKET socket, Header &header) { 
@@ -77,36 +82,30 @@ int main() {
             std::println("unable to connect with the server!");
         }
     };
+
     LoginWindow *login = new LoginWindow(showLoginWindow, username, onClickLogin);
     
     
-    ChatWindow *chat = new ChatWindow(showChatWindow, username, usernames, messages, privateMessages, [&client](std::string msg) {
-        client->sendMessage(msg);
-    }, [&showPrivateChatWindow, &selectedUserForPrivate, &username](std::string usernameFromList) {
-        if (usernameFromList != username) {
-            showPrivateChatWindow = true;
-            selectedUserForPrivate = usernameFromList;
+    ChatWindow *chat = new ChatWindow(
+        showChatWindow, username, usernames, messages, privateMessages, [&client](std::string msg) {
+            client->sendMessage(msg);
+        }, [&showPrivateChatWindow, &selectedUserForPrivate, &username](std::string usernameFromList) {
+            if (usernameFromList != username) {
+                showPrivateChatWindow = true;
+                selectedUserForPrivate = usernameFromList;
+            }
         }
-    });
+    );
 
     
-    PrivateChatWindow *privateChat = new PrivateChatWindow(showPrivateChatWindow, username, privateMessages, selectedUserForPrivate, 
+    PrivateChatWindow *privateChat = new PrivateChatWindow(
+        showPrivateChatWindow, username, privateMessages, selectedUserForPrivate, 
         [&client, &selectedUserForPrivate, &privateMessages, &username](std::string msg) {
             ReceivedMessage receivedMsg = {msg, username, true};
             privateMessages[selectedUserForPrivate].push_back(receivedMsg);
             client->sendPrivateMessageToUser(selectedUserForPrivate, msg);
-        });
-
-    // showMainWindow
-    // showAlertWindow
-    // showPrivateWindow
-
-    // string[] mainConversation
-    // map<string: username, string[]> privateConversations
-    // string[] usersArray
-
-    // username
-    // messageInput
+        }
+    );
 
     while (!done)
     {
@@ -118,8 +117,9 @@ int main() {
         if (showLoginWindow) login->render();
         if (showChatWindow) chat->render();
         if (showPrivateChatWindow) privateChat->render();
-
+        if (showAlertWindow) alert->render();
         // ---------------------------------------------------
+    
         uiHelper::render(clear_color);
     }
 
