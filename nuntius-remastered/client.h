@@ -95,7 +95,7 @@ public:
         }
 
         if (connect(clientSocket, reinterpret_cast<sockaddr*>(&serverAddress), sizeof(serverAddress)) == SOCKET_ERROR) {
-            std::string errMessage = "Connection failed with error: " + WSAGetLastError();
+            std::string errMessage = "Connection failed with error: " + std::to_string(WSAGetLastError());
             closesocket(clientSocket);
             throw FatalServerException(errMessage);
         }

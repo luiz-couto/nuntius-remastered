@@ -82,6 +82,8 @@ int main() {
     std::function<void(std::string err)> onServerFatalException = [
         &showLoginWindow,
         &showAlertWindow,
+        &showChatWindow,
+        &showPrivateChatWindow,
         &alertMessage,
         &messages,
         &privateMessages,
@@ -89,6 +91,8 @@ int main() {
     ] (std::string err) {
         showLoginWindow = true;
         showAlertWindow = true;
+        showChatWindow = false;
+        showPrivateChatWindow = false;
         alertMessage = err;
         messages.clear();
         privateMessages.clear();
@@ -98,11 +102,12 @@ int main() {
     Client *client = new Client(actionMap, onServerFatalException);
     client->init();
 
-    std::function<void()> onClickLogin = [&client, &username]() {
+    std::function<void()> onClickLogin = [&client, &username, &showAlertWindow, &alertMessage]() {
         try {
             client->connectToServer(username);
         } catch (const FatalServerException &err) {
-            std::println("unable to connect with the server!");
+            showAlertWindow = true;
+            alertMessage = std::format("unable to connect with the server!");
         }
     };
 
