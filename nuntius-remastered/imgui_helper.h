@@ -19,6 +19,7 @@ static IDXGISwapChain*          g_pSwapChain = nullptr;
 static bool                     g_SwapChainOccluded = false;
 static UINT                     g_ResizeWidth = 0, g_ResizeHeight = 0;
 static ID3D11RenderTargetView*  g_mainRenderTargetView = nullptr;
+static ImFont*                  g_titleFont = nullptr;
 
 // Forward declarations of helper functions
 bool CreateDeviceD3D(HWND hWnd);
@@ -29,6 +30,7 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 void setupIMGUIStyle(ImGuiIO& io, float main_scale) {
     io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\segoeui.ttf", 16.0f);
+    g_titleFont = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\gabriola.ttf", 50.0f);
 
     // Setup Dear ImGui style
     ImGui::StyleColorsDark();
